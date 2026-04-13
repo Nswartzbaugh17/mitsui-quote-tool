@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PQS Quote Builder v2</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --line: #334155;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #2563eb;
+      --accent2: #60a5fa;
+      --white: #ffffff;
+      --ink: #111827;
+      --soft: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #0b1220, var(--bg));
+      color: var(--text);
+    }
+    .wrap { max-width: 1520px; margin: 0 auto; padding: 24px; }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      display: inline-block;
+      border: 1px solid var(--line);
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: var(--accent2);
+      background: rgba(37, 99, 235, 0.08);
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .card {
+      background: rgba(17, 24, 39, 0.96);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+    .grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .columns2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .full { grid-column: 1 / -1; }
+    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: bold; }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid #475569;
+      background: #0b1220;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 11px 12px;
+      font-size: 14px;
+      outline: none;
+    }
+    textarea { min-height: 90px; resize: vertical; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 15px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .primary { background: var(--accent); color: #fff; }
+    .secondary { background: #1e293b; color: var(--text); border: 1px solid var(--line); }
+    .ghost { background: transparent; color: var(--muted); border: 1px dashed var(--line); }
+    .danger { background: #7f1d1d; color: #fff; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .progress { display: flex; gap: 8px; margin: 10px 0 20px; flex-wrap: wrap; }
+    .step {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .step.active { color: #fff; border-color: var(--accent2); background: rgba(37, 99, 235, 0.15); }
+    .section-title {
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--accent2);
+      margin-bottom: 12px;
+    }
+    .group-card {
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 14px;
+      padding: 12px;
+      background: #0b1220;
+      margin-bottom: 12px;
+    }
+    .group-card h3 { margin: 0 0 8px; font-size: 14px; }
+    .small { font-size: 12px; color: var(--muted); }
+    .mono { font-family: Consolas, Monaco, monospace; }
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      margin-left: 8px;
+      font-size: 12px;
+      color: #86efac;
+    }
+    .option-item {
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #0b1220;
+      margin-bottom: 10px;
+    }
+    .option-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: start;
+    }
+    .option-head {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .tag {
+      font-size: 10px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--accent2);
+    }
+    .review-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .table th, .table td {
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      padding: 8px 6px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .template-preview {
+      background: #fff;
+      color: #111827;
+      border-radius: 14px;
+      border: 1px solid #d1d5db;
+      padding: 18px;
+      max-height: 72vh;
+      overflow: auto;
+    }
+    .quote-paper {
+      width: 8.5in;
+      min-height: 11in;
+      margin: 0 auto;
+      background: #fff;
+      color: #111827;
+      padding: 0.4in 0.45in 0.45in 0.45in;
+      box-shadow: 0 0 0 1px #d1d5db;
+    }
+    .quote-header {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #111827;
+      margin-bottom: 14px;
+    }
+    .brand {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .doc-title {
+      text-align: right;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 16px;
+      margin-bottom: 14px;
+      font-size: 12px;
+    }
+    .meta-box {
+      border: 1px solid #cbd5e1;
+      padding: 8px;
+      border-radius: 6px;
+      background: #fff;
+    }
+    .meta-box strong {
+      display: block;
+      font-size: 10px;
+      color: #475569;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .quote-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      margin-top: 8px;
+    }
+    .quote-table th, .quote-table td {
+      border: 1px solid #cbd5e1;
+      padding: 6px 6px;
+      vertical-align: top;
+    }
+    .quote-table th {
+      background: #f8fafc;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .totals-box {
+      margin-top: 12px;
+      margin-left: auto;
+      width: 42%;
+      border: 1px solid #cbd5e1;
+    }
+    .totals-box .line {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      padding: 8px 10px;
+      border-bottom: 1px solid #cbd5e1;
+      font-size: 12px;
+    }
+    .totals-box .line:last-child { border-bottom: 0; font-weight: 700; }
+    .notes-box {
+      margin-top: 14px;
+      border: 1px solid #cbd5e1;
+      padding: 10px;
+      font-size: 11px;
+      min-height: 90px;
+    }
+    .footer-box {
+      margin-top: 12px;
+      font-size: 10px;
+      color: #475569;
+      line-height: 1.5;
+    }
+    @media (max-width: 1100px) {
+      .grid, .form-grid, .columns2 { grid-template-columns: 1fr; }
+      .quote-paper { width: 100%; min-height: auto; }
+      .quote-header, .meta-grid { grid-template-columns: 1fr; }
+      .totals-box { width: 100%; }
+    }
+    @media print {
+      body { background: #fff; }
+      .wrap, .topbar, .progress, .card:not(.print-zone), .actions, .small-screen-hide { display: none !important; }
+      .print-zone, .template-preview, .quote-paper { display: block !important; box-shadow: none !important; border: 0 !important; }
+      .template-preview { padding: 0 !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div>
+        <div class="badge">PQS SCALABLE BUILDER</div>
+        <h1 style="margin: 10px 0 6px;">Full Product Line Quote Builder</h1>
+        <div class="small">Catalog-driven machine selection, rule-based options, and legacy-style PDF output.</div>
+      </div>
+      <div class="actions">
+        <label class="secondary" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;">
+          Load Catalog JSON
+          <input id="catalogFile" type="file" accept="application/json" style="display:none;" />
+        </label>
+        <button type="button" class="secondary" onclick="loadDemoCatalog()">Load Demo Catalog</button>
+        <button type="button" class="ghost" onclick="downloadCatalogTemplate()">Download Catalog Template</button>
+        <button type="button" class="ghost" onclick="window.print()">Print / Save PDF</button>
+      </div>
+    </div>
+
+    <div class="progress" id="progress"></div>
+
+    <div class="grid">
+      <div class="card">
+        <div id="page-general" class="page active">
+          <div class="section-title">1. Quote Header</div>
+          <div class="form-grid">
+            <div><label for="customerName">Customer Name</label><input id="customerName" /></div>
+            <div><label for="quoteNumber">Quote Number</label><input id="quoteNumber" /></div>
+            <div><label for="rfqNumber">RFQ Number</label><input id="rfqNumber" /></div>
+            <div><label for="quoteDate">Quote Date</label><input id="quoteDate" type="date" /></div>
+            <div><label for="contactName">Contact Name</label><input id="contactName" /></div>
+            <div><label for="contactEmail">Contact Email</label><input id="contactEmail" /></div>
+            <div><label for="contactPhone">Contact Phone</label><input id="contactPhone" /></div>
+            <div><label for="salesperson">Salesperson</label><input id="salesperson" /></div>
+            <div><label for="company">Company</label><input id="company" /></div>
+            <div><label for="opportunity">Project / Opportunity</label><input id="opportunity" /></div>
+            <div class="full"><label for="machineSelect">Machine Model</label><select id="machineSelect"></select></div>
+            <div><label for="quantity">Quantity</label><input id="quantity" type="number" min="1" step="1" value="1" /></div>
+            <div><label>Base Machine Price <span id="basePricePill" class="pill">$0</span></label><input id="basePriceDisplay" disabled /></div>
+            <div class="full"><label for="generalNotes">Quote Notes</label><textarea id="generalNotes"></textarea></div>
+          </div>
+          <div class="actions"><button type="button" class="primary" onclick="nextPage()">Next</button></div>
+        </div>
+
+        <div id="page-options" class="page">
+          <div class="section-title">2. Options</div>
+          <div class="columns2">
+            <div>
+              <div class="group-card">
+                <h3>Machine Options</h3>
+                <div id="machineOptionsHost"></div>
+              </div>
+            </div>
+            <div>
+              <div class="group-card">
+                <h3>CNC Options</h3>
+                <div id="cncOptionsHost"></div>
+              </div>
+            </div>
+          </div>
+          <div class="actions"><button type="button" class="secondary" onclick="prevPage()">Back</button><button type="button" class="primary" onclick="nextPage()">Next</button></div>
+        </div>
+
+        <div id="page-review" class="page">
+          <div class="section-title">3. Review</div>
+          <div class="columns2">
+            <div>
+              <div class="group-card"><h3>Header Summary</h3><div id="generalReview"></div></div>
+              <div class="group-card">
+                <h3>Manual Line Item</h3>
+                <div class="form-grid">
+                  <div><label for="manualType">Section</label><select id="manualType"><option value="machine">Machine Option</option><option value="cnc">CNC Option</option></select></div>
+                  <div><label for="manualCode">Code</label><input id="manualCode" placeholder="OPX-1" /></div>
+                  <div class="full"><label for="manualDesc">Description</label><input id="manualDesc" /></div>
+                  <div><label for="manualPrice">Price</label><input id="manualPrice" type="number" min="0" step="1" value="0" /></div>
+                  <div><label for="manualQty">Qty</label><input id="manualQty" type="number" min="1" step="1" value="1" /></div>
+                </div>
+                <div class="actions"><button type="button" class="secondary" onclick="addManualItem()">Add Line</button></div>
+              </div>
+            </div>
+            <div>
+              <div class="group-card"><h3>Selected Machine Lines</h3><div id="reviewMachine"></div></div>
+              <div class="group-card"><h3>Selected CNC Lines</h3><div id="reviewCnc"></div></div>
+            </div>
+          </div>
+          <div class="actions"><button type="button" class="secondary" onclick="prevPage()">Back</button><button type="button" class="primary" onclick="renderQuoteTemplate()">Build Quote PDF View</button></div>
+        </div>
+      </div>
+
+      <div class="card print-zone">
+        <div class="section-title">Legacy-Style Quote Output</div>
+        <div id="sidebarSummary"></div>
+        <div class="template-preview" id="outputPreview">Build the quote from the review page.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DEFAULT_CATALOG = {
+      companyProfile: {
+        brandName: 'Mitsui Seiki U.S.A., Inc.',
+        address: '1234 Example Industrial Blvd, Franklin Lakes, NJ 07417',
+        phone: '(000) 000-0000',
+        email: 'sales@example.com',
+        website: 'www.example.com',
+        paymentTerms: '20% with order, 70% prior to shipment, 10% upon acceptance unless otherwise stated.',
+        validity: 'Quotation valid for 30 days unless otherwise noted.',
+        exclusions: 'Freight, taxes, rigging, foundations, utilities, and site preparation excluded unless specifically stated.',
+        footer: 'This quotation is subject to final factory review and formal acknowledgement.'
+      },
+      rules: {
+        exclusiveGroups: {
+          spindle_family: ['ST100-01', 'OP100-10', 'OP101-20', 'OP101-30'],
+          atc_family: ['ST200-40', 'OP210-15', 'OP211-60', 'OP211-120']
+        }
+      },
+      machines: [
+        {
+          id: 'J7CN',
+          label: 'J7CN',
+          family: 'Jig Borer',
+          basePrice: 1641140,
+          machineOptions: [
+            { code: 'ST100-01', description: 'Standard spindle package', section: 'machine', standard: true, unitPrice: 0, qty: 1, group: 'spindle_family' },
+            { code: 'OP101-20', description: 'High torque spindle package', section: 'machine', standard: false, unitPrice: 28000, qty: 1, group: 'spindle_family' },
+            { code: 'ST200-40', description: '40 tool ATC', section: 'machine', standard: true, unitPrice: 0, qty: 1, group: 'atc_family' },
+            { code: 'OP210-15', description: '20 tool ATC', section: 'machine', standard: false, unitPrice: 65000, qty: 1, group: 'atc_family' },
+            { code: 'OP211-60', description: '60 tool ATC', section: 'machine', standard: false, unitPrice: 125000, qty: 1, group: 'atc_family' },
+            { code: 'OP300-20', description: 'High pressure coolant package', section: 'machine', standard: false, unitPrice: 8200, qty: 1 },
+            { code: 'OP400-27', description: 'Renishaw spindle probe package', section: 'machine', standard: false, unitPrice: 28000, qty: 1 }
+          ],
+          cncOptions: [
+            { code: 'F3031-009', description: 'FANUC 31i-B5 Plus CNC Control', section: 'cnc', standard: true, unitPrice: 0, qty: 1 },
+            { code: 'F3031-016', description: '15 inch LCD iHMI interface', section: 'cnc', standard: true, unitPrice: 0, qty: 1 },
+            { code: 'F3031-090', description: 'Background editing', section: 'cnc', standard: false, unitPrice: 1850, qty: 1 },
+            { code: 'F3031-153', description: 'Custom macro function', section: 'cnc', standard: false, unitPrice: 810, qty: 1 }
+          ]
+        },
+        {
+          id: 'Vertex75 NEO',
+          label: 'Vertex75 NEO',
+          family: '5-Axis Vertical',
+          basePrice: 1412880,
+          machineOptions: [
+            { code: 'ST100-10', description: 'Standard spindle package', section: 'machine', standard: true, unitPrice: 0, qty: 1, group: 'spindle_family_vtx' },
+            { code: 'OP100-20', description: 'High speed spindle package', section: 'machine', standard: false, unitPrice: 22000, qty: 1, group: 'spindle_family_vtx' },
+            { code: 'ST200-60', description: '60 tool ATC', section: 'machine', standard: true, unitPrice: 0, qty: 1, group: 'atc_family_vtx' },
+            { code: 'OP210-90', description: '90 tool ATC', section: 'machine', standard: false, unitPrice: 46000, qty: 1, group: 'atc_family_vtx' },
+            { code: 'OP300-10', description: 'Coolant through spindle', section: 'machine', standard: false, unitPrice: 12000, qty: 1 },
+            { code: 'OP320-20', description: 'Chip conveyor package', section: 'machine', standard: false, unitPrice: 6800, qty: 1 }
+          ],
+          cncOptions: [
+            { code: 'F3031-009', description: 'FANUC 31i-B5 Plus CNC Control', section: 'cnc', standard: true, unitPrice: 0, qty: 1 },
+            { code: 'F3031-090', description: 'Background editing', section: 'cnc', standard: false, unitPrice: 1850, qty: 1 },
+            { code: 'F3031-184', description: 'Fast data server function', section: 'cnc', standard: false, unitPrice: 5400, qty: 1 }
+          ]
+        }
+      ]
+    };
+
+    const state = {
+      page: 0,
+      catalog: structuredClone(DEFAULT_CATALOG),
+      selections: { machine: {}, cnc: {} },
+      manualMachineItems: [],
+      manualCncItems: []
+    };
+
+    const pages = ['page-general', 'page-options', 'page-review'];
+
+    function byId(id) { return document.getElementById(id); }
+    function esc(v) {
+      return String(v ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+    function fmtMoney(v) {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(Number(v || 0));
+    }
+    function fmtQty(v) { return Number(v || 1); }
+    function fmtDate(v) {
+      if (!v) return '—';
+      const d = new Date(v + 'T00:00:00');
+      if (Number.isNaN(d.getTime())) return v;
+      return d.toLocaleDateString('en-US');
+    }
+    function itemKey(section, code) { return `${section}::${code}`; }
+
+    function getGeneralInfo() {
+      return {
+        customerName: byId('customerName').value.trim(),
+        quoteNumber: byId('quoteNumber').value.trim(),
+        rfqNumber: byId('rfqNumber').value.trim(),
+        quoteDate: byId('quoteDate').value.trim(),
+        contactName: byId('contactName').value.trim(),
+        contactEmail: byId('contactEmail').value.trim(),
+        contactPhone: byId('contactPhone').value.trim(),
+        salesperson: byId('salesperson').value.trim(),
+        company: byId('company').value.trim(),
+        opportunity: byId('opportunity').value.trim(),
+        machineId: byId('machineSelect').value,
+        quantity: Math.max(1, Number(byId('quantity').value || 1)),
+        generalNotes: byId('generalNotes').value.trim()
+      };
+    }
+
+    function currentMachine() {
+      const machineId = byId('machineSelect').value;
+      return state.catalog.machines.find(m => m.id === machineId) || null;
+    }
+
+    function machineOptions() {
+      const m = currentMachine();
+      return m ? (m.machineOptions || []) : [];
+    }
+
+    function cncOptions() {
+      const m = currentMachine();
+      return m ? (m.cncOptions || []) : [];
+    }
+
+    function setDefaultSelections() {
+      state.selections = { machine: {}, cnc: {} };
+      machineOptions().forEach(opt => {
+        if (opt.standard) state.selections.machine[itemKey('machine', opt.code)] = true;
+      });
+      cncOptions().forEach(opt => {
+        if (opt.standard) state.selections.cnc[itemKey('cnc', opt.code)] = true;
+      });
+      applyExclusiveRules();
+    }
+
+    function applyExclusiveRules() {
+      const allMachine = machineOptions();
+      const allCnc = cncOptions();
+      const all = [...allMachine, ...allCnc];
+      const buckets = {};
+      all.forEach(opt => {
+        if (!opt.group) return;
+        if (!buckets[opt.group]) buckets[opt.group] = [];
+        buckets[opt.group].push(opt);
+      });
+      Object.keys(buckets).forEach(group => {
+        const items = buckets[group];
+        const selected = items.filter(opt => {
+          const map = opt.section === 'machine' ? state.selections.machine : state.selections.cnc;
+          return !!map[itemKey(opt.section, opt.code)];
+        });
+        if (selected.length <= 1) return;
+        const keep = selected[selected.length - 1];
+        items.forEach(opt => {
+          const map = opt.section === 'machine' ? state.selections.machine : state.selections.cnc;
+          map[itemKey(opt.section, opt.code)] = opt.code === keep.code;
+        });
+      });
+    }
+
+    function selectedBaseItems(section) {
+      const opts = section === 'machine' ? machineOptions() : cncOptions();
+      const map = section === 'machine' ? state.selections.machine : state.selections.cnc;
+      return opts.filter(opt => !!map[itemKey(section, opt.code)]);
+    }
+
+    function selectedAllItems(section) {
+      const base = selectedBaseItems(section);
+      const manual = section === 'machine' ? state.manualMachineItems : state.manualCncItems;
+      return [...base, ...manual];
+    }
+
+    function baseMachinePrice() {
+      return Number(currentMachine()?.basePrice || 0);
+    }
+
+    function lineExtended(line) {
+      return Number(line.unitPrice || 0) * Number(line.qty || 1);
+    }
+
+    function quoteMath() {
+      const g = getGeneralInfo();
+      const base = baseMachinePrice();
+      const selectedMachineLines = selectedAllItems('machine');
+      const selectedCncLines = selectedAllItems('cnc');
+      const optionsSubtotalOneMachine = [...selectedMachineLines, ...selectedCncLines].reduce((sum, line) => sum + lineExtended(line), 0);
+      const unitTotal = base + optionsSubtotalOneMachine;
+      const grandTotal = unitTotal * g.quantity;
+      return { base, selectedMachineLines, selectedCncLines, optionsSubtotalOneMachine, unitTotal, grandTotal };
+    }
+
+    function renderProgress() {
+      byId('progress').innerHTML = ['Quote Header', 'Options', 'Review'].map((name, idx) => `<div class="step ${idx === state.page ? 'active' : ''}">${idx + 1}. ${name}</div>`).join('');
+      pages.forEach((id, idx) => byId(id).classList.toggle('active', idx === state.page));
+    }
+
+    function renderMachineDropdown() {
+      const sel = byId('machineSelect');
+      const current = currentMachine()?.id;
+      sel.innerHTML = state.catalog.machines.map(m => `<option value="${esc(m.id)}">${esc(m.label || m.id)}</option>`).join('');
+      if (current && state.catalog.machines.some(m => m.id === current)) sel.value = current;
+      if (!sel.value && state.catalog.machines[0]) sel.value = state.catalog.machines[0].id;
+    }
+
+    function updateBasePriceDisplay() {
+      const base = baseMachinePrice();
+      byId('basePriceDisplay').value = fmtMoney(base);
+      byId('basePricePill').textContent = fmtMoney(base);
+    }
+
+    function toggleOption(section, code, checked) {
+      const map = section === 'machine' ? state.selections.machine : state.selections.cnc;
+      const opts = section === 'machine' ? machineOptions() : cncOptions();
+      const target = opts.find(x => x.code === code);
+      map[itemKey(section, code)] = checked;
+      if (checked && target?.group) {
+        opts.filter(x => x.group === target.group && x.code !== code).forEach(x => {
+          map[itemKey(section, x.code)] = false;
+        });
+      }
+      renderOptions();
+      renderReview();
+      renderSidebar();
+    }
+
+    function optionCard(section, opt) {
+      const map = section === 'machine' ? state.selections.machine : state.selections.cnc;
+      const checked = !!map[itemKey(section, opt.code)];
+      const isExclusive = !!opt.group;
+      const extended = lineExtended(opt);
+      return `
+        <div class="option-item">
+          <div class="option-row">
+            <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleOption('${esc(section)}','${esc(opt.code)}', this.checked)" />
+            <div>
+              <div class="option-head">
+                <strong>${esc(opt.code)}</strong>
+                ${opt.standard ? '<span class="tag">STD</span>' : ''}
+                ${isExclusive ? `<span class="tag">${esc(opt.group)}</span>` : ''}
+              </div>
+              <div>${esc(opt.description)}</div>
+              <div class="small">Qty: ${fmtQty(opt.qty || 1)}</div>
+            </div>
+            <div class="mono">${opt.standard ? 'INCL' : fmtMoney(extended)}</div>
+          </div>
+        </div>`;
+    }
+
+    function renderOptionsSection(hostId, section, opts) {
+      const standards = opts.filter(x => x.standard);
+      const optional = opts.filter(x => !x.standard);
+      byId(hostId).innerHTML = `
+        <div class="small" style="margin-bottom:10px;">Exclusive option families are enforced automatically where group codes exist.</div>
+        <div class="group-card">
+          <h3>Standard</h3>
+          ${standards.length ? standards.map(x => optionCard(section, x)).join('') : '<div class="small">No standard items.</div>'}
+        </div>
+        <div class="group-card">
+          <h3>Selectable</h3>
+          ${optional.length ? optional.map(x => optionCard(section, x)).join('') : '<div class="small">No optional items.</div>'}
+        </div>`;
+    }
+
+    function renderOptions() {
+      renderOptionsSection('machineOptionsHost', 'machine', machineOptions());
+      renderOptionsSection('cncOptionsHost', 'cnc', cncOptions());
+    }
+
+    function removeSelected(section, code) {
+      if (section === 'machine') {
+        state.selections.machine[itemKey(section, code)] = false;
+        state.manualMachineItems = state.manualMachineItems.filter(x => x.code !== code);
+      } else {
+        state.selections.cnc[itemKey(section, code)] = false;
+        state.manualCncItems = state.manualCncItems.filter(x => x.code !== code);
+      }
+      renderOptions();
+      renderReview();
+      renderSidebar();
+    }
+
+    function renderReviewList(lines, section) {
+      if (!lines.length) return '<div class="small">Nothing selected.</div>';
+      return lines.map(line => `
+        <div class="review-item">
+          <div>
+            <div><strong>${esc(line.code)}</strong></div>
+            <div class="small">${esc(line.description)}</div>
+            <div class="small">Qty: ${fmtQty(line.qty || 1)}</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="mono">${line.standard ? 'INCL' : fmtMoney(lineExtended(line))}</div>
+            <button type="button" class="ghost" onclick="removeSelected('${esc(section)}','${esc(line.code)}')">Remove</button>
+          </div>
+        </div>`).join('');
+    }
+
+    function renderReview() {
+      const g = getGeneralInfo();
+      const q = quoteMath();
+      byId('generalReview').innerHTML = `
+        <div class="review-item"><div>Customer</div><div>${esc(g.customerName || '—')}</div></div>
+        <div class="review-item"><div>Quote #</div><div>${esc(g.quoteNumber || '—')}</div></div>
+        <div class="review-item"><div>RFQ #</div><div>${esc(g.rfqNumber || '—')}</div></div>
+        <div class="review-item"><div>Machine</div><div class="mono">${esc(currentMachine()?.label || '—')}</div></div>
+        <div class="review-item"><div>Qty</div><div>${g.quantity}</div></div>
+        <div class="review-item"><div>Unit Total</div><div class="mono">${fmtMoney(q.unitTotal)}</div></div>
+        <div class="review-item"><div>Grand Total</div><div class="mono">${fmtMoney(q.grandTotal)}</div></div>`;
+      byId('reviewMachine').innerHTML = renderReviewList(q.selectedMachineLines, 'machine');
+      byId('reviewCnc').innerHTML = renderReviewList(q.selectedCncLines, 'cnc');
+    }
+
+    function renderSidebar() {
+      const g = getGeneralInfo();
+      const q = quoteMath();
+      byId('sidebarSummary').innerHTML = `
+        <div class="review-item"><div>Machine</div><div class="mono">${esc(currentMachine()?.label || '—')}</div></div>
+        <div class="review-item"><div>Family</div><div>${esc(currentMachine()?.family || '—')}</div></div>
+        <div class="review-item"><div>Qty</div><div>${g.quantity}</div></div>
+        <div class="review-item"><div>Base Unit Price</div><div class="mono">${fmtMoney(q.base)}</div></div>
+        <div class="review-item"><div>Options / Unit</div><div class="mono">${fmtMoney(q.optionsSubtotalOneMachine)}</div></div>
+        <div class="review-item"><div>Total / Unit</div><div class="mono">${fmtMoney(q.unitTotal)}</div></div>
+        <div class="review-item"><div>Grand Total</div><div class="mono">${fmtMoney(q.grandTotal)}</div></div>
+        <div class="small" style="margin-top:10px;">The engine is catalog-driven. To scale to the full line, replace the demo JSON with the full machine and option export.</div>`;
+    }
+
+    function renderQuoteRows() {
+      const q = quoteMath();
+      const lines = [
+        { code: currentMachine()?.id || 'BASE', description: `${currentMachine()?.label || 'Machine'} base machine`, qty: 1, unitPrice: q.base, extendedPrice: q.base, section: 'base' },
+        ...q.selectedMachineLines.map(line => ({ ...line, unitPrice: Number(line.unitPrice || 0), extendedPrice: lineExtended(line), section: 'machine' })),
+        ...q.selectedCncLines.map(line => ({ ...line, unitPrice: Number(line.unitPrice || 0), extendedPrice: lineExtended(line), section: 'cnc' }))
+      ];
+      return lines.map((line, idx) => `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${esc(line.code)}</td>
+          <td>${esc(line.description)}</td>
+          <td>${esc(line.section.toUpperCase())}</td>
+          <td>${fmtQty(line.qty || 1)}</td>
+          <td>${fmtMoney(line.unitPrice || 0)}</td>
+          <td>${line.standard ? 'INCL' : fmtMoney(line.extendedPrice || 0)}</td>
+        </tr>`).join('');
+    }
+
+    function renderQuoteTemplate() {
+      const g = getGeneralInfo();
+      const q = quoteMath();
+      const company = state.catalog.companyProfile || {};
+      byId('outputPreview').innerHTML = `
+        <div class="quote-paper">
+          <div class="quote-header">
+            <div>
+              <div class="brand">${esc(company.brandName || 'Company Name')}</div>
+              <div style="font-size:11px; line-height:1.5; margin-top:6px;">
+                ${esc(company.address || '')}<br>
+                ${esc(company.phone || '')}${company.email ? ' | ' + esc(company.email) : ''}${company.website ? ' | ' + esc(company.website) : ''}
+              </div>
+            </div>
+            <div>
+              <div class="doc-title">Quotation</div>
+              <div style="font-size:11px; text-align:right; margin-top:6px;">Legacy-formatted output with pictures and layout drawings removed.</div>
+            </div>
+          </div>
+
+          <div class="meta-grid">
+            <div class="meta-box"><strong>Customer</strong>${esc(g.customerName || '—')}</div>
+            <div class="meta-box"><strong>Quote Number</strong>${esc(g.quoteNumber || '—')}</div>
+            <div class="meta-box"><strong>Contact</strong>${esc(g.contactName || '—')}</div>
+            <div class="meta-box"><strong>RFQ Number</strong>${esc(g.rfqNumber || '—')}</div>
+            <div class="meta-box"><strong>Email / Phone</strong>${esc(g.contactEmail || '—')} ${g.contactPhone ? ' / ' + esc(g.contactPhone) : ''}</div>
+            <div class="meta-box"><strong>Quote Date</strong>${esc(fmtDate(g.quoteDate))}</div>
+            <div class="meta-box"><strong>Machine</strong>${esc(currentMachine()?.label || '—')}</div>
+            <div class="meta-box"><strong>Salesperson</strong>${esc(g.salesperson || '—')}</div>
+            <div class="meta-box"><strong>Project</strong>${esc(g.opportunity || '—')}</div>
+            <div class="meta-box"><strong>Quantity</strong>${g.quantity}</div>
+          </div>
+
+          <table class="quote-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Code</th>
+                <th>Description</th>
+                <th>Section</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Extended</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${renderQuoteRows()}
+            </tbody>
+          </table>
+
+          <div class="totals-box">
+            <div class="line"><div>Base Machine</div><div>${fmtMoney(q.base)}</div></div>
+            <div class="line"><div>Options Subtotal / Unit</div><div>${fmtMoney(q.optionsSubtotalOneMachine)}</div></div>
+            <div class="line"><div>Total / Unit</div><div>${fmtMoney(q.unitTotal)}</div></div>
+            <div class="line"><div>Quantity</div><div>${g.quantity}</div></div>
+            <div class="line"><div>Grand Total</div><div>${fmtMoney(q.grandTotal)}</div></div>
+          </div>
+
+          <div class="notes-box">
+            <strong style="display:block; margin-bottom:6px; font-size:10px; text-transform:uppercase; color:#475569;">Notes / Scope</strong>
+            ${esc(g.generalNotes || 'No special notes entered.')}
+          </div>
+
+          <div class="footer-box">
+            <div><strong>Payment Terms:</strong> ${esc(company.paymentTerms || '—')}</div>
+            <div><strong>Validity:</strong> ${esc(company.validity || '—')}</div>
+            <div><strong>Exclusions:</strong> ${esc(company.exclusions || '—')}</div>
+            <div style="margin-top:6px;">${esc(company.footer || '')}</div>
+          </div>
+        </div>`;
+    }
+
+    function addManualItem() {
+      const section = byId('manualType').value;
+      const code = byId('manualCode').value.trim();
+      const description = byId('manualDesc').value.trim();
+      const unitPrice = Number(byId('manualPrice').value || 0);
+      const qty = Math.max(1, Number(byId('manualQty').value || 1));
+      if (!code || !description) {
+        alert('Code and description are required.');
+        return;
+      }
+      const line = { code, description, unitPrice, qty, standard: false, section };
+      if (section === 'machine') state.manualMachineItems.push(line);
+      else state.manualCncItems.push(line);
+      byId('manualCode').value = '';
+      byId('manualDesc').value = '';
+      byId('manualPrice').value = '0';
+      byId('manualQty').value = '1';
+      renderReview();
+      renderSidebar();
+      renderQuoteTemplate();
+    }
+
+    function nextPage() {
+      if (state.page < pages.length - 1) {
+        state.page += 1;
+        renderProgress();
+        renderReview();
+        renderSidebar();
+      }
+    }
+
+    function prevPage() {
+      if (state.page > 0) {
+        state.page -= 1;
+        renderProgress();
+      }
+    }
+
+    function resetSelectionsForMachineChange() {
+      state.manualMachineItems = [];
+      state.manualCncItems = [];
+      setDefaultSelections();
+      updateBasePriceDisplay();
+      renderOptions();
+      renderReview();
+      renderSidebar();
+      renderQuoteTemplate();
+    }
+
+    function downloadCatalogTemplate() {
+      const blob = new Blob([JSON.stringify(state.catalog, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'pqs_catalog_template.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function loadDemoCatalog() {
+      state.catalog = structuredClone(DEFAULT_CATALOG);
+      renderMachineDropdown();
+      resetSelectionsForMachineChange();
+    }
+
+    function handleCatalogUpload(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(String(reader.result));
+          if (!Array.isArray(parsed.machines) || !parsed.machines.length) throw new Error('Catalog must include a non-empty machines array.');
+          state.catalog = parsed;
+          renderMachineDropdown();
+          resetSelectionsForMachineChange();
+        } catch (err) {
+          alert(`Catalog load failed: ${err.message}`);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function bindEvents() {
+      byId('catalogFile').addEventListener('change', handleCatalogUpload);
+      byId('machineSelect').addEventListener('change', resetSelectionsForMachineChange);
+      ['customerName','quoteNumber','rfqNumber','quoteDate','contactName','contactEmail','contactPhone','salesperson','company','opportunity','quantity','generalNotes']
+        .forEach(id => byId(id).addEventListener('input', () => {
+          updateBasePriceDisplay();
+          renderReview();
+          renderSidebar();
+          renderQuoteTemplate();
+        }));
+    }
+
+    function init() {
+      renderMachineDropdown();
+      setDefaultSelections();
+      updateBasePriceDisplay();
+      renderProgress();
+      renderOptions();
+      renderReview();
+      renderSidebar();
+      renderQuoteTemplate();
+      bindEvents();
+      const today = new Date();
+      byId('quoteDate').value = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+      renderReview();
+      renderSidebar();
+      renderQuoteTemplate();
+    }
+
+    init();
+  </script>
+</body>
+</html>

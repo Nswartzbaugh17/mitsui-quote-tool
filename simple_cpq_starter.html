@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PQS Wizard Builder</title>
+<style>
+:root{--bg:#0f172a;--panel:#111827;--line:#334155;--text:#e5e7eb;--muted:#94a3b8;--accent:#2563eb;--accent2:#60a5fa}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#0b1220,var(--bg));color:var(--text)}
+.wrap{max-width:1440px;margin:0 auto;padding:24px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px}.badge{display:inline-block;border:1px solid var(--line);padding:6px 10px;border-radius:999px;color:var(--accent2);background:rgba(37,99,235,.08);font-size:12px;font-weight:bold}.card{background:rgba(17,24,39,.96);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.2)}.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:20px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.columns2{display:grid;grid-template-columns:1fr 1fr;gap:18px}.full{grid-column:1/-1}label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:bold}input,select,textarea{width:100%;border:1px solid #475569;background:#0b1220;color:var(--text);border-radius:10px;padding:11px 12px;font-size:14px;outline:none}textarea{min-height:92px;resize:vertical}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}button{border:0;border-radius:12px;padding:11px 15px;font-weight:bold;cursor:pointer;font-size:14px}.primary{background:var(--accent);color:#fff}.secondary{background:#1e293b;color:var(--text);border:1px solid var(--line)}.ghost{background:transparent;color:var(--muted);border:1px dashed var(--line)}.page{display:none}.page.active{display:block}.progress{display:flex;gap:8px;margin:10px 0 20px;flex-wrap:wrap}.step{padding:8px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:12px}.step.active{color:#fff;border-color:var(--accent2);background:rgba(37,99,235,.15)}.section-title{font-size:15px;text-transform:uppercase;letter-spacing:.8px;color:var(--accent2);margin-bottom:12px}.group-card{border:1px solid rgba(148,163,184,.15);border-radius:14px;padding:12px;background:#0b1220;margin-bottom:12px}.group-card h3{margin:0 0 8px;font-size:14px}.option-list{display:grid;gap:10px}.option-item{border:1px solid rgba(148,163,184,.15);border-radius:12px;padding:10px 12px;background:#0b1220}.option-row{display:flex;gap:10px;align-items:flex-start}.option-meta{margin-left:auto;color:var(--accent2);white-space:nowrap}.review-item{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid rgba(148,163,184,.14)}.inline{display:flex;gap:10px;align-items:center}.small{font-size:12px;color:var(--muted)}.mono{font-family:Consolas,Monaco,monospace}.preview-box{background:#fff;color:#111827;border-radius:14px;padding:18px;border:1px solid #d1d5db}.preview-box .row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #e5e7eb}.preview-box .meta{color:#4b5563;font-size:12px}.test-pass{color:#86efac}.test-fail{color:#fca5a5}.pill{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid var(--line);margin-left:8px;font-size:12px}.pill.good{color:#86efac}.pill.warn{color:#fde68a}@media (max-width:980px){.grid,.form-grid,.columns2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div>
+      <div class="badge">PQS OPTION A</div>
+      <h1 style="margin:10px 0 6px;">Quote Builder Workflow</h1>
+      <div class="small">Five-machine production prototype with real workbook-derived data.</div>
+    </div>
+    <div class="actions">
+      <button type="button" class="secondary" onclick="loadSample()">Load Sample</button>
+      <button type="button" class="ghost" onclick="runSelfChecks()">Run Self-Checks</button>
+    </div>
+  </div>
+
+  <div class="progress" id="progress"></div>
+
+  <div class="grid">
+    <div class="card">
+      <div id="page-general" class="page active">
+        <div class="section-title">1. General Info</div>
+        <div class="form-grid">
+          <div><label for="customerName">Customer Name</label><input id="customerName" /></div>
+          <div><label for="quoteNumber">Quote Number</label><input id="quoteNumber" /></div>
+          <div><label for="rfqNumber">RFQ Number</label><input id="rfqNumber" /></div>
+          <div><label for="contactName">Contact Name</label><input id="contactName" /></div>
+          <div><label for="contactEmail">Contact Email</label><input id="contactEmail" /></div>
+          <div><label for="contactPhone">Contact Phone</label><input id="contactPhone" /></div>
+          <div><label for="company">Company</label><input id="company" /></div>
+          <div><label for="opportunity">Project / Opportunity</label><input id="opportunity" /></div>
+          <div><label for="quoteDate">Quote Date</label><input id="quoteDate" type="date" /></div>
+          <div><label for="salesperson">Salesperson</label><input id="salesperson" /></div>
+          <div class="full"><label for="machineSelect">Machine Model</label><select id="machineSelect"></select></div>
+          <div class="full"><label>Base Machine Price <span id="basePricePill" class="pill good">$0</span></label><input id="basePriceDisplay" disabled /></div>
+          <div class="full"><label for="generalNotes">General Notes</label><textarea id="generalNotes"></textarea></div>
+        </div>
+        <div class="actions"><button type="button" class="primary" onclick="nextPage()">Next</button></div>
+      </div>
+
+      <div id="page-machine-options" class="page">
+        <div class="section-title">2. Machine Options</div>
+        <div class="small" style="margin-bottom:10px;">Grouped only by real families: spindles = OP100/ST100/OP101/ST101, ATCs = OP210/OP211/ST200. Everything else is multi-select.</div>
+        <div id="machineOptionsHost"></div>
+        <div class="actions"><button type="button" class="secondary" onclick="prevPage()">Back</button><button type="button" class="primary" onclick="nextPage()">Next</button></div>
+      </div>
+
+      <div id="page-cnc-options" class="page">
+        <div class="section-title">3. CNC Control Options</div>
+        <div id="cncOptionsHost"></div>
+        <div class="actions"><button type="button" class="secondary" onclick="prevPage()">Back</button><button type="button" class="primary" onclick="nextPage()">Next</button></div>
+      </div>
+
+      <div id="page-review" class="page">
+        <div class="section-title">4. Review + Edit</div>
+        <div class="columns2">
+          <div>
+            <div class="group-card"><h3>General Info</h3><div id="generalReview"></div></div>
+            <div class="group-card">
+              <h3>Add Missing Item</h3>
+              <div class="form-grid">
+                <div><label for="manualType">Type</label><select id="manualType"><option value="machine">Machine Option</option><option value="cnc">CNC Option</option></select></div>
+                <div><label for="manualCode">Code</label><input id="manualCode" placeholder="OPX-1 / FXXXX" /></div>
+                <div class="full"><label for="manualDesc">Description</label><input id="manualDesc" /></div>
+                <div><label for="manualPrice">Price</label><input id="manualPrice" type="number" min="0" step="1" value="0" /></div>
+              </div>
+              <div class="actions"><button type="button" class="secondary" onclick="addManualItem()">Add Item</button></div>
+            </div>
+          </div>
+          <div>
+            <div class="group-card"><h3>Selected Machine Options</h3><div id="reviewMachine"></div></div>
+            <div class="group-card"><h3>Selected CNC Options</h3><div id="reviewCnc"></div></div>
+          </div>
+        </div>
+        <div class="actions"><button type="button" class="secondary" onclick="prevPage()">Back</button><button type="button" class="primary" onclick="renderOutputPreview()">Generate Output Preview</button></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Current Summary</div>
+      <div id="sidebarSummary"></div>
+      <div class="section-title" style="margin-top:18px;">Output Preview</div>
+      <div id="outputPreview" class="small">Generate a preview from the review page.</div>
+      <div id="testPanel" class="small" style="margin-top:18px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = __FIVE_MACHINE_DATA__;
+const state = {page:0,selectedMachineOptions:{},selectedCncOptions:{},manualMachineItems:[],manualCncItems:[]};
+const pages=['page-general','page-machine-options','page-cnc-options','page-review'];
+
+function byId(id){return document.getElementById(id)}
+function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function fmtMoney(v){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(Number(v||0))}
+function nl2br(v){return esc(v||'').replace(/\n/g,'<br>')}
+function itemKey(kind,code){return kind+'::'+code}
+
+function getGeneralInfo(){return {customerName:byId('customerName').value.trim(),quoteNumber:byId('quoteNumber').value.trim(),rfqNumber:byId('rfqNumber').value.trim(),contactName:byId('contactName').value.trim(),contactEmail:byId('contactEmail').value.trim(),contactPhone:byId('contactPhone').value.trim(),company:byId('company').value.trim(),opportunity:byId('opportunity').value.trim(),quoteDate:byId('quoteDate').value.trim(),salesperson:byId('salesperson').value.trim(),machine:byId('machineSelect').value,generalNotes:byId('generalNotes').value}}
+function getMachineData(){const machine=byId('machineSelect').value;return DATA.data[machine]||{m:[],c:[]}}
+function getBasePrice(machine){return Number(DATA.basePrices[machine]||0)}
+
+function inferGroup(item){
+  const code = String(item[0]||'').toUpperCase();
+  if (/^(OP100|ST100|OP101|ST101)/.test(code)) return 'spindle';
+  if (/^(OP210|OP211|ST200)/.test(code)) return 'atc';
+  return '';
+}
+
+function normalizeItems(list){
+  const seen={};
+  return list.map(x=>({code:x[0],description:x[1],standard:!!x[2],price:Number(x[3]||0),group:inferGroup(x)})).filter(i=>{
+    const key=i.code+'|'+i.description;
+    if(seen[key]) return false;
+    seen[key]=true;
+    return true;
+  });
+}
+
+function updateBasePrice(){
+  const machine=byId('machineSelect').value;
+  const base=getBasePrice(machine);
+  byId('basePriceDisplay').value=fmtMoney(base);
+  byId('basePricePill').textContent=fmtMoney(base);
+}
+
+function init(){
+  const sel=byId('machineSelect');
+  sel.innerHTML=DATA.machines.map(m=>'<option value="'+esc(m)+'">'+esc(m)+'</option>').join('');
+  sel.addEventListener('change',onMachineChange);
+  renderProgress();
+  onMachineChange();
+  updateSidebar();
+}
+
+function onMachineChange(){
+  state.selectedMachineOptions={}; state.selectedCncOptions={}; state.manualMachineItems=[]; state.manualCncItems=[];
+  updateBasePrice(); renderMachineOptions(); renderCncOptions(); renderReview(); updateSidebar();
+}
+
+function renderCheckbox(item,kind){
+  const key=itemKey(kind,item.code); const selectedMap=kind==='machine'?state.selectedMachineOptions:state.selectedCncOptions; const checked=!!selectedMap[key];
+  return '<div class="option-item"><div class="option-row"><input type="checkbox" '+(checked?'checked':'')+' onchange="toggleItem(\''+esc(kind)+'\',\''+esc(item.code)+'\', this.checked)" /><div><div><strong>'+esc(item.code)+'</strong> '+(item.standard?'<span class="small">STD</span>':'')+'</div><div class="small">'+esc(item.description)+'</div></div><div class="option-meta">'+(item.standard?'INCL':fmtMoney(item.price))+'</div></div></div>';
+}
+
+function renderOptionSection(hostId,items,selectedMap,kind){
+  const host=byId(hostId); const normalized=normalizeItems(items); const groups={}; const standalone=[];
+  normalized.forEach(item=>{ if(item.group){ if(!groups[item.group]) groups[item.group]=[]; groups[item.group].push(item);} else standalone.push(item); });
+  normalized.forEach(item=>{ const key=itemKey(kind,item.code); if(selectedMap[key]===undefined && item.standard) selectedMap[key]=true; });
+  Object.keys(groups).forEach(group=>{ const arr=groups[group]; const selected=arr.find(i=>selectedMap[itemKey(kind,i.code)])||arr.find(i=>i.standard)||null; arr.forEach(i=>selectedMap[itemKey(kind,i.code)] = selected ? i.code===selected.code : false); });
+  const standardItems=standalone.filter(i=>i.standard); const optionalItems=standalone.filter(i=>!i.standard); const labels={spindle:'Spindle Family',atc:'ATC Family'};
+  host.innerHTML='<div class="columns2"><div><div class="group-card"><h3>Standard Items</h3><div class="option-list">'+(standardItems.length?standardItems.map(item=>renderCheckbox(item,kind)).join(''):'<div class="small">No standard line items parsed for this section.</div>')+'</div></div>'+Object.keys(groups).map(group=>{ const arr=groups[group]; const selected=arr.find(i=>selectedMap[itemKey(kind,i.code)])||null; return '<div class="group-card"><h3>'+esc(labels[group]||group)+'</h3><label>Select one</label><select data-group="'+esc(group)+'" data-kind="'+esc(kind)+'" onchange="handleGroupSelect(event)"><option value="">None</option>'+arr.map(i=>'<option value="'+esc(i.code)+'" '+(selected&&selected.code===i.code?'selected':'')+'>'+esc(i.code+' - '+i.description) + (i.price?' ('+fmtMoney(i.price)+')':i.standard?' (STD)':'') + '</option>').join('')+'</select></div>'}).join('')+'</div><div><div class="group-card"><h3>Additional Selectable Items</h3><div class="option-list">'+(optionalItems.length?optionalItems.map(item=>renderCheckbox(item,kind)).join(''):'<div class="small">No additional selectable items parsed for this section.</div>')+'</div></div></div></div>';
+}
+function toggleItem(kind,code,checked){ const selectedMap=kind==='machine'?state.selectedMachineOptions:state.selectedCncOptions; const items=normalizeItems(kind==='machine'?getMachineData().m:getMachineData().c); const item=items.find(i=>i.code===code); selectedMap[itemKey(kind,code)]=checked; if(checked&&item&&item.group){ items.filter(i=>i.group===item.group&&i.code!==code).forEach(i=>{selectedMap[itemKey(kind,i.code)]=false}); if(kind==='machine') renderMachineOptions(); else renderCncOptions(); } renderReview(); updateSidebar(); }
+function handleGroupSelect(event){ const group=event.target.getAttribute('data-group'); const kind=event.target.getAttribute('data-kind'); const code=event.target.value; const selectedMap=kind==='machine'?state.selectedMachineOptions:state.selectedCncOptions; const items=normalizeItems(kind==='machine'?getMachineData().m:getMachineData().c); items.filter(i=>i.group===group).forEach(i=>selectedMap[itemKey(kind,i.code)] = !!code && i.code===code); if(kind==='machine') renderMachineOptions(); else renderCncOptions(); renderReview(); updateSidebar(); }
+function renderMachineOptions(){ renderOptionSection('machineOptionsHost', getMachineData().m, state.selectedMachineOptions, 'machine'); }
+function renderCncOptions(){ renderOptionSection('cncOptionsHost', getMachineData().c, state.selectedCncOptions, 'cnc'); }
+function selectedItems(kind){ const raw=normalizeItems(kind==='machine'?getMachineData().m:getMachineData().c); const map=kind==='machine'?state.selectedMachineOptions:state.selectedCncOptions; const base=raw.filter(i=>map[itemKey(kind,i.code)]); const manual=kind==='machine'?state.manualMachineItems:state.manualCncItems; return base.concat(manual); }
+function removeSelected(kind,code){ if(kind==='machine'){ state.selectedMachineOptions[itemKey(kind,code)]=false; state.manualMachineItems=state.manualMachineItems.filter(i=>i.code!==code); renderMachineOptions(); } else { state.selectedCncOptions[itemKey(kind,code)]=false; state.manualCncItems=state.manualCncItems.filter(i=>i.code!==code); renderCncOptions(); } renderReview(); updateSidebar(); }
+function addManualItem(){ const type=byId('manualType').value, code=byId('manualCode').value.trim(), desc=byId('manualDesc').value.trim(), price=Number(byId('manualPrice').value||0); if(!code||!desc){ alert('Code and description are required.'); return; } const item={code,description:desc,standard:false,price}; if(type==='machine') state.manualMachineItems.push(item); else state.manualCncItems.push(item); byId('manualCode').value=''; byId('manualDesc').value=''; byId('manualPrice').value=0; renderReview(); updateSidebar(); }
+function renderReviewList(items,kind){ if(!items.length) return '<div class="small">Nothing selected yet.</div>'; return items.map(i=>'<div class="review-item"><div><div><strong>'+esc(i.code)+'</strong></div><div class="small">'+esc(i.description)+'</div></div><div class="inline"><div class="mono">'+(i.standard?'INCL':fmtMoney(i.price))+'</div><button type="button" class="ghost" onclick="removeSelected(\''+esc(kind)+'\',\''+esc(i.code)+'\')">Remove</button></div></div>').join(''); }
+function renderReview(){ const g=getGeneralInfo(); byId('generalReview').innerHTML='<div class="review-item"><div>Customer</div><div>'+esc(g.customerName||'—')+'</div></div><div class="review-item"><div>Quote #</div><div>'+esc(g.quoteNumber||'—')+'</div></div><div class="review-item"><div>RFQ #</div><div>'+esc(g.rfqNumber||'—')+'</div></div><div class="review-item"><div>Contact</div><div>'+esc(g.contactName||'—')+'</div></div><div class="review-item"><div>Machine</div><div class="mono">'+esc(g.machine||'—')+'</div></div><div class="review-item"><div>Base Price</div><div class="mono">'+fmtMoney(getBasePrice(g.machine))+'</div></div><div class="review-item"><div>Notes</div><div>'+(g.generalNotes?nl2br(g.generalNotes):'—')+'</div></div>'; byId('reviewMachine').innerHTML=renderReviewList(selectedItems('machine'),'machine'); byId('reviewCnc').innerHTML=renderReviewList(selectedItems('cnc'),'cnc'); }
+function renderProgress(){ byId('progress').innerHTML=['General Info','Machine Options','CNC Options','Review'].map((name,idx)=>'<div class="step '+(idx===state.page?'active':'')+'">'+(idx+1)+'. '+name+'</div>').join(''); pages.forEach((id,idx)=>byId(id).classList.toggle('active', idx===state.page)); }
+function nextPage(){ if(state.page < pages.length-1){ state.page += 1; if(pages[state.page]==='page-review') renderReview(); renderProgress(); updateSidebar(); } }
+function prevPage(){ if(state.page > 0){ state.page -= 1; renderProgress(); updateSidebar(); } }
+function updateSidebar(){ const g=getGeneralInfo(), m=selectedItems('machine'), c=selectedItems('cnc'), base=getBasePrice(g.machine), optionsTotal=m.concat(c).reduce((sum,i)=>sum+Number(i.price||0),0), grand=base+optionsTotal; byId('sidebarSummary').innerHTML='<div class="review-item"><div>Machine</div><div class="mono">'+esc(g.machine||'—')+'</div></div><div class="review-item"><div>Base price</div><div class="mono">'+fmtMoney(base)+'</div></div><div class="review-item"><div>Machine items selected</div><div>'+m.length+'</div></div><div class="review-item"><div>CNC items selected</div><div>'+c.length+'</div></div><div class="review-item"><div>Selectable item total</div><div class="mono">'+fmtMoney(optionsTotal)+'</div></div><div class="review-item"><div>Current quote total</div><div class="mono">'+fmtMoney(grand)+'</div></div><div class="small" style="margin-top:12px;">Option A is wired for five real machines: J7CN, PJ303X, Vertex75 NEO, HU100-TS, and HU63A-5X.</div>' }
+function renderPreviewRows(items){ if(!items.length) return '<div class="meta">None selected.</div>'; return items.map(i=>'<div class="row"><div><strong>'+esc(i.code)+'</strong> - '+esc(i.description)+'</div><div>'+(i.standard?'INCL':fmtMoney(i.price))+'</div></div>').join(''); }
+function renderOutputPreview(){ renderReview(); const g=getGeneralInfo(), m=selectedItems('machine'), c=selectedItems('cnc'), base=getBasePrice(g.machine), optionsTotal=m.concat(c).reduce((sum,i)=>sum+Number(i.price||0),0), grand=base+optionsTotal; byId('outputPreview').innerHTML='<div class="preview-box"><h2 style="margin:0 0 10px;">'+esc(g.customerName||'Customer TBD')+'</h2><div class="meta">Quote #: '+esc(g.quoteNumber||'TBD')+' | RFQ #: '+esc(g.rfqNumber||'TBD')+' | Machine: '+esc(g.machine||'TBD')+'</div><div class="row"><div><strong>Base Machine Price</strong></div><div><strong>'+fmtMoney(base)+'</strong></div></div><h3 style="margin:18px 0 10px; color:#111827;">Machine Options</h3>'+renderPreviewRows(m)+'<h3 style="margin:18px 0 10px; color:#111827;">CNC Options</h3>'+renderPreviewRows(c)+'<div class="row"><strong>Options Total</strong><strong>'+fmtMoney(optionsTotal)+'</strong></div><div class="row"><strong>Current Quote Total</strong><strong>'+fmtMoney(grand)+'</strong></div></div>' }
+function loadSample(){ byId('customerName').value='Bell Flight'; byId('quoteNumber').value='5-NS-02062026-00'; byId('rfqNumber').value='Verbal Jeff'; byId('contactName').value='Jeff'; byId('contactEmail').value='jeff@example.com'; byId('contactPhone').value='555-555-5555'; byId('company').value='MSA'; byId('opportunity').value='J7CN with MUHPT'; byId('quoteDate').value='2026-02-07'; byId('salesperson').value='Nathan'; byId('machineSelect').value='J7CN'; byId('generalNotes').value='Option A sample loaded with real workbook-derived J7CN data.'; onMachineChange(); const md=normalizeItems(getMachineData().m); ['OP210-15','OP400-27','OP550-90'].forEach(code=>{ const item=md.find(i=>i.code===code); if(item){ state.selectedMachineOptions[itemKey('machine',code)]=true; if(item.group){ md.filter(x=>x.group===item.group&&x.code!==code).forEach(x=>state.selectedMachineOptions[itemKey('machine',x.code)]=false); } } }); const cd=normalizeItems(getMachineData().c); ['F3031-090','F3031-153','F3031-324'].forEach(code=>{ const item=cd.find(i=>i.code===code); if(item) state.selectedCncOptions[itemKey('cnc',code)]=true; }); state.manualMachineItems=[{code:'OPX-1',description:'Custom fixture interface package',standard:false,price:18000}]; renderMachineOptions(); renderCncOptions(); renderReview(); updateSidebar(); renderOutputPreview(); }
+function runSelfChecks(){ const tests=[]; tests.push({name:'Five-machine dropdown loaded',pass:DATA.machines.length===5}); tests.push({name:'J7CN base price loaded from workbook',pass:getBasePrice('J7CN')===1641140}); tests.push({name:'HU100-TS base price loaded from workbook',pass:getBasePrice('HU100-TS')===1850940}); tests.push({name:'Spindle grouping is prefix based only',pass:inferGroup(['OP101-20','x'])==='spindle' && inferGroup(['OP125-30','x'])===''}); tests.push({name:'ATC grouping is prefix based only',pass:inferGroup(['OP210-15','x'])==='atc' && inferGroup(['OP300-20','x'])===''}); tests.push({name:'J7CN machine options loaded',pass:DATA.data['J7CN'].m.length>40}); tests.push({name:'Vertex75 NEO machine options loaded',pass:DATA.data['Vertex75 NEO'].m.length>80}); tests.push({name:'Preview renderer avoids document.write',pass:String(renderOutputPreview).indexOf('document.write')===-1}); byId('testPanel').innerHTML='<div class="section-title">Self-Checks</div>'+tests.map(t=>'<div class="'+(t.pass?'test-pass':'test-fail')+'">'+(t.pass?'PASS':'FAIL')+' - '+esc(t.name)+'</div>').join(''); }
+init(); runSelfChecks();
+</script>
+</body>
+        <div class="section-title">3. CNC Control Options</div>
+        <div id="cncOptionsHost"></div>
+        <div class="actions"><button type="button" class="secondary" onclick="prevPage()">Back</button><button type="button" class="primary" onclick="nextPage()">Next</button></div>
+      </div>
+
+      <div id="page-review" class="page">
+        <div class="section-title">4. Review + Edit</div>
+        <div class="columns2">
+          <div>
+            <div class="group-card">
+              <h3>General Info</h3>
+              <div id="generalReview"></div>
+            </div>
+            <div class="group-card">
+              <h3>Add Missing Item</h3>
+              <div class="form-grid">
+                <div><label for="manualType">Type</label><select id="manualType"><option value="machine">Machine Option</option><option value="cnc">CNC Option</option></select></div>
+                <div><label for="manualCode">Code</label><input id="manualCode" placeholder="OPX-1 / FXXXX" /></div>
+                <div class="full"><label for="manualDesc">Description</label><input id="manualDesc" /></div>
+                <div><label for="manualPrice">Price</label><input id="manualPrice" type="number" min="0" step="1" value="0" /></div>
+              </div>
+              <div class="actions"><button type="button" class="secondary" onclick="addManualItem()">Add Item</button></div>
+            </div>
+          </div>
+          <div>
+            <div class="group-card">
+              <h3>Selected Machine Options</h3>
+              <div id="reviewMachine"></div>
+            </div>
+            <div class="group-card">
+              <h3>Selected CNC Options</h3>
+              <div id="reviewCnc"></div>
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="secondary" onclick="prevPage()">Back</button>
+          <button type="button" class="primary" onclick="renderOutputPreview()">Generate Output Preview</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Current Summary</div>
+      <div id="sidebarSummary"></div>
+      <div class="section-title" style="margin-top:18px;">Output Preview</div>
+      <div id="outputPreview" class="small">Generate a preview from the review page.</div>
+      <div id="testPanel" class="small" style="margin-top:18px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MACHINE_LIST = [
+  'PJ303X','VL30','VL30-5X','VL50','VU50A','VU65A','VU65A-SH','Vertex55 NEO','Vertex55X NEO','Vertex55X NEO-DD',
+  'Vertex75 NEO','Vertex75X NEO','Vertex75X NEO-DD','Vertex100X','HU50A','HU63EX','HPX63 II','HU80EX','HU100','HS8A',
+  'H5D','H6D','HU50A-5X','HU63A-5X','HU80A-5X','HU100-5X','HU100-5X (1500)','HU100-5XL','HU100-5XLL','HU100-TS',
+  'HU100-TS HD','HU50-T','HU63-T','HU100-T','PJ812','J6CN','J7CN','J1220','J1230','J1625',
+  'VJ7A','J350G','J450G','J650G','J750G','J7G-HD','GSE30A','GSE50H','GSE50A','GSE100A',
+  'GSE200A','GSE320A','GSN180iS','VGi20A','LMS-1500N','LMS-3000N'
+];
+
+function makeFiller(prefix, count, startPrice, stdEvery) {
+  const items = [];
+  for (let i = 1; i <= count; i += 1) {
+    const code = prefix + String(i).padStart(3, '0');
+    const desc = prefix === 'F3031-' ? 'Control option ' + i : 'Machine option ' + i;
+    const standard = stdEvery > 0 && i % stdEvery === 0 ? 1 : 0;
+    const price = standard ? 0 : startPrice + (i * 25);
+    items.push([code, desc, standard, price]);
+  }
+  return items;
+}
+
+const J7CN_MACHINE_OPTIONS = [
+  ['ST100-01','Standard spindle package',1,0],
+  ['ST150-01','Work light LED',1,0],
+  ['ST200-40','40 tool ATC',1,0],
+  ['OP200-90','90 tool ATC',0,54000],
+  ['OP200-120','120 tool ATC',0,78000],
+  ['ST125-45','Spindle taper CAT45',1,0],
+  ['OP125-50','Spindle taper BT50',0,6500],
+  ['ST300-01','Standard coolant package',1,0],
+  ['OP300-20','High pressure coolant package',0,8200],
+  ['OP300-30','Paper filter coolant package',0,5400],
+  ['ST400-01','Chip conveyor standard type',1,0],
+  ['OP400-20','Hinge chip conveyor',0,4100],
+  ['OP400-30','Scraper chip conveyor',0,4700],
+  ['OP500-10','Rotary table interface preparation',0,6200],
+  ['OP500-20','Full rotary table package',0,24000],
+  ['OP600-10','AMCS measurement package',0,12500],
+  ['OP600-20','Renishaw spindle probe package',0,16740],
+  ['OP600-30','Laser tool setter package',0,9945],
+  ['ST700-01','Protective cover package',1,0],
+  ['OP700-10','Mist collector',0,6525],
+  ['OP700-20','Mist collector auto cleaner',0,22410],
+  ['OP800-10','Additional machine paint color',0,4050],
+  ['OP800-20','Extended warranty',0,0],
+  ['OP800-30','Additional operation manual set',0,270],
+  ['OP900-10','Custom fixturing interface',0,18000],
+  ['OP910-10','Special inspection package',0,9500]
+];
+
+const J7CN_CNC_OPTIONS = [
+  ['F3031-009','FANUC 31i-B5 Plus CNC Control',1,0],
+  ['F3031-016','15 inch LCD iHMI interface',1,0],
+  ['F3031-090','Background editing',0,1850],
+  ['F3031-093','Backlash compensation',1,0],
+  ['F3031-105','Bi-directional pitch error compensation',0,4700],
+  ['F3031-114','Canned cycle package',1,0],
+  ['F3031-123','Circular interpolation by R programming',1,0],
+  ['F3031-126','Circular interpolation G02 G03',1,0],
+  ['F3031-153','Custom macro function',0,810],
+  ['F3031-184','Fast data server function',0,5400],
+  ['F3031-207','Heidenhain linear scale full closed loop X Y Z',0,0],
+  ['F3031-210','Heidenhain rotary encoder on B and C axis',0,0],
+  ['F3031-222','Inch metric conversion',0,405],
+  ['F3031-261','Number of registered programs expansion',0,540],
+  ['F3031-267','Part program storage 8MB',0,1080],
+  ['F3031-282','Thread cutting synchronous cutting',0,540],
+  ['F3031-288','High speed skip',0,810],
+  ['F3031-300','Graphic display',0,810],
+  ['F3031-309','Program restart',0,2430],
+  ['F3031-315','Helical interpolation',0,810],
+  ['F3031-324','High speed skip J848',0,810],
+  ['F3031-420','Scaling',0,540],
+  ['F3031-474','Tool life management',0,810],
+  ['F3031-480','Tool offset memory C',0,810],
+  ['F3031-486','Program expansion 1 J953',0,810],
+  ['F3031-492','Touch probe interface',0,810],
+  ['F3031-510','FOCAS2 Ethernet',0,810],
+  ['F3031-534','Part program storage 8MB J959',0,810],
+  ['F3031-552','Polar coordinate command',0,540],
+  ['F3031-604','Reader puncher interface',0,810]
+].concat(makeFiller('F3031-', 35, 500, 0));
+
+const PJ303X_MACHINE_OPTIONS = [
+  ['ST100-05','35000 RPM spindle package',1,0],
+  ['OP100-10','20000 RPM spindle',0,0],
+  ['OP100-15','20000 RPM spindle with HSK A63',0,17550],
+  ['ST200-15','55 tool ATC',1,0],
+  ['OP200-55','90 tool ATC magazine',0,73665],
+  ['ST310-35','Flood coolant system',1,0],
+  ['OP311-20','Spindle through coolant system',0,6150],
+  ['OP321-30','Oil mist collector',0,6525],
+  ['OP351-50','Renishaw spindle touch probe',0,16740],
+  ['OP351-80','Laser tool setter',0,17865]
+];
+
+const PJ303X_CNC_OPTIONS = [
+  ['F3031-009','FANUC 31i-B5 Plus CNC Control',1,0],
+  ['F3031-016','15 inch LCD iHMI interface',1,0],
+  ['F3031-090','Background editing',0,1850],
+  ['F3031-153','Custom macro function',0,810],
+  ['F3031-184','Fast data server function',0,5400],
+  ['F3031-288','High speed skip',0,810],
+  ['F3031-300','Graphic display',0,810],
+  ['F3031-315','Helical interpolation',0,810]
+].concat(makeFiller('F3031-', 18, 450, 0));
+
+const DATA = { machines: MACHINE_LIST, data: {} };
+MACHINE_LIST.forEach(function(machine) {
+  DATA.data[machine] = { m: [], c: [] };
+});
+DATA.data['J7CN'] = { m: J7CN_MACHINE_OPTIONS, c: J7CN_CNC_OPTIONS };
+DATA.data['PJ303X'] = { m: PJ303X_MACHINE_OPTIONS, c: PJ303X_CNC_OPTIONS };
+
+const state = {
+  page: 0,
+  selectedMachineOptions: {},
+  selectedCncOptions: {},
+  manualMachineItems: [],
+  manualCncItems: []
+};
+const pages = ['page-general','page-machine-options','page-cnc-options','page-review'];
+
+function byId(id) { return document.getElementById(id); }
+function esc(v) {
+  return String(v ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+function fmtMoney(v) {
+  const n = Number(v || 0);
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0
+  }).format(n);
+}
+function nl2br(v) { return esc(v || '').replace(/\n/g, '<br>'); }
+function itemKey(kind, code) { return kind + '::' + code; }
+
+function getGeneralInfo() {
+  return {
+    customerName: byId('customerName').value.trim(),
+    quoteNumber: byId('quoteNumber').value.trim(),
+    rfqNumber: byId('rfqNumber').value.trim(),
+    contactName: byId('contactName').value.trim(),
+    contactEmail: byId('contactEmail').value.trim(),
+    contactPhone: byId('contactPhone').value.trim(),
+    company: byId('company').value.trim(),
+    opportunity: byId('opportunity').value.trim(),
+    quoteDate: byId('quoteDate').value.trim(),
+    salesperson: byId('salesperson').value.trim(),
+    machine: byId('machineSelect').value,
+    generalNotes: byId('generalNotes').value
+  };
+}
+
+function getMachineData() {
+  const machine = byId('machineSelect').value;
+  return DATA.data[machine] || { m: [], c: [] };
+}
+
+function inferGroup(item) {
+  const code = item[0] || '';
+  const desc = String(item[1] || '').toLowerCase();
+  if (/tool changer|\batc\b/.test(desc)) return 'atc';
+  if (/chip conveyor/.test(desc)) return 'chip_conveyor';
+  if (/spindle taper/.test(desc)) return 'spindle_taper';
+  if (/\bspindle\b/.test(desc) && /^(ST100|OP100|OP125)/.test(code)) return 'spindle';
+  if (/coolant/.test(desc)) return 'coolant';
+  if (/rotary|tilt|table/.test(desc)) return 'rotary_table';
+  if (/probe|amcs|measuring|renishaw|laser tool setter/.test(desc)) return 'probe';
+  return '';
+}
+
+function normalizeItems(list) {
+  return list.map(function(x) {
+    return {
+      code: x[0],
+      description: x[1],
+      standard: !!x[2],
+      price: Number(x[3] || 0),
+      group: inferGroup(x)
+    };
+  });
+}
+
+function init() {
+  const sel = byId('machineSelect');
+  sel.innerHTML = DATA.machines.map(function(m) {
+    return '<option value="' + esc(m) + '">' + esc(m) + '</option>';
+  }).join('');
+  sel.addEventListener('change', onMachineChange);
+  renderProgress();
+  onMachineChange();
+  updateSidebar();
+}
+
+function onMachineChange() {
+  state.selectedMachineOptions = {};
+  state.selectedCncOptions = {};
+  state.manualMachineItems = [];
+  state.manualCncItems = [];
+  renderMachineOptions();
+  renderCncOptions();
+  renderReview();
+  updateSidebar();
+}
+
+function renderCheckbox(item, kind) {
+  const key = itemKey(kind, item.code);
+  const selectedMap = kind === 'machine' ? state.selectedMachineOptions : state.selectedCncOptions;
+  const checked = !!selectedMap[key];
+  return [
+    '<div class="option-item">',
+    '  <div class="option-row">',
+    '    <input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="toggleItem(\'' + esc(kind) + '\',\'' + esc(item.code) + '\', this.checked)" />',
+    '    <div>',
+    '      <div><strong>' + esc(item.code) + '</strong> ' + (item.standard ? '<span class="small">STD</span>' : '') + '</div>',
+    '      <div class="small">' + esc(item.description) + '</div>',
+    '    </div>',
+    '    <div class="option-meta">' + (item.standard ? 'INCL' : fmtMoney(item.price)) + '</div>',
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function renderOptionSection(hostId, items, selectedMap, kind) {
+  const host = byId(hostId);
+  const normalized = normalizeItems(items);
+  const groups = {};
+  const standalone = [];
+
+  normalized.forEach(function(item) {
+    if (item.group) {
+      if (!groups[item.group]) groups[item.group] = [];
+      groups[item.group].push(item);
+    } else {
+      standalone.push(item);
+    }
+  });
+
+  normalized.forEach(function(item) {
+    const key = itemKey(kind, item.code);
+    if (selectedMap[key] === undefined && item.standard) {
+      selectedMap[key] = true;
+    }
+  });
+
+  Object.keys(groups).forEach(function(group) {
+    const arr = groups[group];
+    const selected = arr.find(function(i) { return selectedMap[itemKey(kind, i.code)]; }) || arr.find(function(i) { return i.standard; }) || null;
+    arr.forEach(function(i) {
+      selectedMap[itemKey(kind, i.code)] = selected ? i.code === selected.code : false;
+    });
+  });
+
+  const standardItems = standalone.filter(function(i) { return i.standard; });
+  const optionalItems = standalone.filter(function(i) { return !i.standard; });
+  const groupLabels = {
+    atc: 'ATC / Tool Changer',
+    chip_conveyor: 'Chip Conveyor',
+    spindle_taper: 'Spindle Taper',
+    spindle: 'Spindle',
+    coolant: 'Coolant',
+    rotary_table: 'Rotary / Table',
+    probe: 'Probe / Measuring'
+  };
+
+  host.innerHTML = [
+    '<div class="columns2">',
+    '  <div>',
+    '    <div class="group-card">',
+    '      <h3>Standard Items</h3>',
+    '      <div class="option-list">',
+             standardItems.length ? standardItems.map(function(item) { return renderCheckbox(item, kind); }).join('') : '<div class="small">No standard line items parsed for this section.</div>',
+    '      </div>',
+    '    </div>',
+         Object.keys(groups).map(function(group) {
+           const arr = groups[group];
+           const selected = arr.find(function(i) { return selectedMap[itemKey(kind, i.code)]; }) || null;
+           return [
+             '<div class="group-card">',
+             '  <h3>' + esc(groupLabels[group] || group) + '</h3>',
+             '  <label>Select one</label>',
+             '  <select data-group="' + esc(group) + '" data-kind="' + esc(kind) + '" onchange="handleGroupSelect(event)">',
+             '    <option value="">None</option>',
+                  arr.map(function(i) {
+                    const suffix = i.price ? ' (' + fmtMoney(i.price) + ')' : i.standard ? ' (STD)' : '';
+                    return '<option value="' + esc(i.code) + '" ' + (selected && selected.code === i.code ? 'selected' : '') + '>' + esc(i.code + ' - ' + i.description) + suffix + '</option>';
+                  }).join(''),
+             '  </select>',
+             '</div>'
+           ].join('');
+         }).join(''),
+    '  </div>',
+    '  <div>',
+    '    <div class="group-card">',
+    '      <h3>Additional Selectable Items</h3>',
+    '      <div class="option-list">',
+             optionalItems.length ? optionalItems.map(function(item) { return renderCheckbox(item, kind); }).join('') : '<div class="small">No additional selectable items parsed for this section.</div>',
+    '      </div>',
+    '    </div>',
+    '  </div>',
+    '</div>'
+  ].join('');
+}
+
+function toggleItem(kind, code, checked) {
+  const selectedMap = kind === 'machine' ? state.selectedMachineOptions : state.selectedCncOptions;
+  const items = normalizeItems(kind === 'machine' ? getMachineData().m : getMachineData().c);
+  const item = items.find(function(i) { return i.code === code; });
+  selectedMap[itemKey(kind, code)] = checked;
+  if (checked && item && item.group) {
+    items.filter(function(i) { return i.group === item.group && i.code !== code; }).forEach(function(i) {
+      selectedMap[itemKey(kind, i.code)] = false;
+    });
+    if (kind === 'machine') renderMachineOptions(); else renderCncOptions();
+  }
+  renderReview();
+  updateSidebar();
+}
+
+function handleGroupSelect(event) {
+  const group = event.target.getAttribute('data-group');
+  const kind = event.target.getAttribute('data-kind');
+  const code = event.target.value;
+  const selectedMap = kind === 'machine' ? state.selectedMachineOptions : state.selectedCncOptions;
+  const items = normalizeItems(kind === 'machine' ? getMachineData().m : getMachineData().c);
+  items.filter(function(i) { return i.group === group; }).forEach(function(i) {
+    selectedMap[itemKey(kind, i.code)] = !!code && i.code === code;
+  });
+  if (kind === 'machine') renderMachineOptions(); else renderCncOptions();
+  renderReview();
+  updateSidebar();
+}
+
+function renderMachineOptions() {
+  renderOptionSection('machineOptionsHost', getMachineData().m, state.selectedMachineOptions, 'machine');
+}
+function renderCncOptions() {
+  renderOptionSection('cncOptionsHost', getMachineData().c, state.selectedCncOptions, 'cnc');
+}
+
+function selectedItems(kind) {
+  const raw = normalizeItems(kind === 'machine' ? getMachineData().m : getMachineData().c);
+  const map = kind === 'machine' ? state.selectedMachineOptions : state.selectedCncOptions;
+  const base = raw.filter(function(i) { return map[itemKey(kind, i.code)]; });
+  const manual = kind === 'machine' ? state.manualMachineItems : state.manualCncItems;
+  return base.concat(manual);
+}
+
+function removeSelected(kind, code) {
+  if (kind === 'machine') {
+    state.selectedMachineOptions[itemKey(kind, code)] = false;
+    state.manualMachineItems = state.manualMachineItems.filter(function(i) { return i.c
